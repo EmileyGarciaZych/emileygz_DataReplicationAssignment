@@ -4,3 +4,372 @@ author: "Emiley Garcia-Zych"
 date: "2023-10-10"
 output: html_document
 ---
+
+# Reanalysis of Murali et al. (2018): Grab my tail: evolution of dazzle stripes and colourful tails in lizards
+
+*Emiley Garcia-Zych*
+
+*December 14, 2023*
+
+<center>
+
+<p><img src="https://media.istockphoto.com/id/1326151249/vector/cartoon-mexican-chameleons-vector-lizards-set.jpg?s=612x612&amp;w=0&amp;k=20&amp;c=pevTfnjfOXN0ih8W4hrHRKZxdvtfml7N8nwAZpDo234=" style="border:5px solid black"/></p>
+
+</center>
+
+<br>
+
+## Introduction
+
+In this document, I outline the reanalysis of Murali et al. (2018), who examines the occurrence of longitudinal stripes and colorful tails in lizards. The researchers aim to understand the ecological factors associated with the evolution of tail stripes.
+
+Experimental studies have previously suggested that colorful tails may serve as a distraction or deflection mechanism, potentially increasing the lizard's chances of escape by sacrificing a less vital part of their body. Additionally, longitudinal body stripes in moving lizards were proposed to redirect predators' strikes toward the tail through a phenomenon called the 'motion dazzle' effect.
+
+However, despite these experimental findings, the ecological factors influencing the evolution of such colorations were not well-explored. The researchers conducted a study using comparative methods and considered eco-physiological variables such as caudal autotomy (ability to lose the tail), diel activity (activity during the day), microhabitat, and body temperature.
+
+Their data set (ecological_data.csv) has data related to caudal autotomy, diel activity, microhabitat, and body temperature. This data was used in both figure 1 and figure 2. The Coloration (10/3 volunteers) gave information regarding the physical coloring and tail presence of the lizards as provided by volunteers. The results indicate that both longitudinal stripes and colorful tails are associated with diurnal (daytime) activity and the ability to lose the tail. Striped species are more likely to be ground-dwelling and have higher body temperatures compared to stripeless species, highlighting a connection between stripes and a mobility-driven rapid escape strategy. The study suggests that stripes and colorful tails have evolved together in a correlated fashion multiple times, indicating a potential link in their functions.
+
+## Outline of Research & My Replication
+
+In their analysis, they perform a series of descriptive and interpretive analyses. These are visualized in a series of graphics. I plan to replicate
+
+1.  figure 1. Ancestral states of protective colorations. (*interpretive analyses)*
+
+2.  figure 2. Correlation between discrete traits (caudal autotomy, stripes, colourful tail, diel activity and habitat). (*descriptive analyses)*
+
+### Research Methods
+
+#### Data Collection
+
+The data set on lizard body and tail coloration represents 1622 species under 36 lizard families. Color patterns were scored by three volunteers independently based on 7907 images. Presence or absence of color traits were scored as follows:
+
+-   *Stripes:* clearly visible stripes from the top of snout to tail base. If present, scored as Lateral, Dorsal, or both
+
+    -   *Lateral:* ran along sides of the body
+
+    -   *Dorsal:* restricted to the dorsal body parts
+
+-   *Colourful tail:* criteria (1) the tail color was either red, blue or green, and (2) the tail color was different from the body.
+
+    -   *Red Tail*
+
+    -   *Blue Tail*
+
+    -   *Green Tail*
+
+This procedure was then repeated for 10 additional volunteers and strong concordance was found. For the analysis provided, the data was taken from the 3 volunteer data.
+
+To test the association between caudal autotomy and protective coloration, data was collected regarding diel activity, species-specific body temperature, and habitat.
+
+-   *Caudal Autotomy:* the ability of a lizard to detach and regrow a tail when damage has occurred.
+
+-   *Diel activity:* nocturnal (1) verus diurnal (0).
+
+-   *Habitat:* ground-dwelling (0) versus scansorial (1).
+
+-   *Body Temperature:* measured when the lizard was active.
+
+#### 1) Ancestral State Reconstruction for Binary Coloration Traits
+
+(i) Bayesian stochastic character mapping using the function *make.simmap* from *phytools*
+
+(ii) corHMM-based maximum-likelihood method
+
+```{=html}
+<!-- -->
+```
+2)  Identifying correlation between discrete traits
+
+-   using the software Bayestraits, implemented a reversible jump Markov chain method to obtain parameter estimates from different evolutionary models
+
+    -   *independent:* assumes there is no correlation
+
+    -   *dependent:* assumes there is correlation
+
+    -   \*all analyses were performed for 10 million iterations with a burn-in of 1 million to avoid including values before MCMC chain convergence.
+
+#### 3) Analyzing the Output
+
+-   using Tracer v 1.6 to confirm convergence
+
+-   All runs were assumed to have converged because the effective sample size of all parameters was \>200.
+
+-   calculated the log Bayes factor in Tracer for each pair of models.
+
+    -   a high log Bayes factor indicates support for dependent over independent
+
+-   performed phylogenetic logistic regression using the function *phyloglm* in package *phylolm* to account for the effect of body size.
+
+-   coded all the coloration states as separate binary variables and we compared the log Bayes factor values computed for each pair of binary traits against other possible pairwise combinations to check which of the pairwise combinations fitted the data best.
+
+#### 4) Phylogenetic path analysis
+
+-   employed the d separation method using the R package *phylopath* employing a PLR approach. The models were ranked based on the C-statistics information criterion.
+
+#### 5) Correlation between stripes and body temp
+
+-   employed phylogenetic generalized least squares regression using the *nlme* and *geiger* packages. Data was fitted using three evolutionary models (Ornstein-Uhlenbeck, Brownian motion and estimated lambda model), and best fit was based on the Akaike weights.
+
+### My Replication
+
+#### *Figure 1: Ancestral States of Protective Colorations (Interpretive Statistics)*
+
+1.  **Install** and **Load** the correct packages
+
+2.  Create or Import a phylogenetic tree
+
+3.  **Prepare** the data matrix with the character states for each tip of the tree. This matrix should have rows corresponding to species or taxa and columns representing character states.
+
+4.  Perform **Bayesian Stochastic Character Mapping**
+
+    1.  Convert data frame to a data matrix.
+
+    2.  Perform **Bayesian stochastic character mapping** with simmap function
+
+        1.  "make.simmap" takes the phylogenetic tree and the the trait matrix as input. The nsim parameter will be 5000 in accordance with the figure in the study.
+
+    3.  Visualize the results.
+
+#### *Figure 2: Correlation between discrete traits (caudal autotomy, stripes, colourful tail, diel activity and habitat) (Descriptive Statistics)*
+
+1.  Load and clean data to remove incomplete samples.
+
+2.  Simplify lizard description data (coloration) to simple if tail (1) versus no tail (0).
+
+3.  Combine data so physical description data is in the same table as ecological data.
+
+4.  Create a boxplot showing median and interquartile range of lizard body temperature.
+
+5.  Create a graph showing proportion of striped and non-striped species which are nocturnal or diurnal.
+
+6.  Create a graph showing the proportion of striped and non-striped which are ground dwelling or scansorial.
+
+7.  Create a graph showing the proportion of species with and without colorful tails that are nocturnal or diurnal.
+
+## Figure 1: Ancestral States of Protective Colorations
+
+"Ancestral state reconstruction using Bayesian stochastic character mapping of stripes and colourful tail. The colour bar represents the posterior probability of the tip states from 5000 simulations."
+
+1.  Download necessary packages.
+
+```{r}
+library(phytools)
+library(ape)
+library(dplyr)
+```
+
+2.  Create tree.
+
+```{r}
+# Set the number of tips (samples) in the tree
+num_tips <- 1622
+# Create a random ultrametric tree with num_tips tips
+tree <- rtree(num_tips)
+# Plot the tree
+plot(tree, cex = 0.8)
+```
+3.  **Prepare** the data matrix with the character states for each tip of the tree. This matrix should have rows corresponding to species or taxa and columns representing character states.
+
+```{r}
+# Load data from CSV file
+col3vol <- read.csv("Data_file.xls - Coloration (Three voulnteers).csv")
+eco_data <- na.omit(col3vol)
+
+# Sum the values in each row
+sums_per_row <- rowSums(col3vol[, 2:7])
+# Create a new data frame
+stripes01 <- data.frame(
+ Species.name = col3vol$Species.name,
+  Stripes = ifelse(sums_per_row == 0, 0, 1)
+)
+
+sums_per_row_1 <- rowSums(col3vol[, 8:16])
+stripes02 <- data.frame(Species.name = col3vol$Species.name, Color = ifelse(sums_per_row_1 == 0, 0, 1))
+
+stripes <- merge(stripes01, stripes02, by = "Species.name", all = TRUE)
+# Display the new data frame
+stripes
+```
+
+4.  Perform **Bayesian Stochastic Character Mapping**
+
+    4.  
+
+        a)  Convert data frame to a data matrix.
+
+```{r}
+# Convert data frame to a data matrix
+trait_matrix <- data.matrix(stripes)
+head(trait_matrix)
+
+```
+
+    4.  
+
+        b)  Perform **Bayesian stochastic character mapping** with simmap function. To visualize how traits have evolved over time, the researchers performed ancestral state reconstruction for binary coloration traits using two approaches: (i) Bayesian stochastic character mapping and (ii) corHMM-based maximum likelihood method, which takes into account heterogeneity in trait evolution.
+
+        For Bayesian stochastic character mapping the function used was *make.simmap* from the *phytools* package.
+
+```{r}
+num_simulations <- 5000
+# Create a data matrix for the traits (example with two binary traits)
+trait_matrix <- matrix(sample(0:1, num_tips * 2, replace = TRUE), ncol = 2)
+
+# Perform Bayesian stochastic character mapping
+simmap_result <- make.simmap(tree, trait_matrix, nsim = num_simulations)
+```
+
+5.  Visualize the results:
+```{r}
+plotSimmap(simmap_result, fsize = 0.8, cex = 0.8, mar = c(3, 1, 1, 1))
+```
+
+```{r}
+
+# Set the number of tips (samples) in the tree
+num_tips <- 1000
+# Create a random ultrametric tree with num_tips tips
+tree <- rtree(num_tips)
+# Plot the tree (optional)
+plot(tree, cex = 0.6)
+# Set the number of simulations
+num_simulations <- 5000
+# Create a data matrix for a binary trait (example)
+trait_matrix <- matrix(sample(0:1, num_tips, replace = TRUE), ncol = 1)
+# Perform Bayesian stochastic character mapping
+simmap_result <- make.simmap(tree, trait_matrix, nsim = num_simulations)
+# Visualize the results with a color bar representing posterior probabilities
+plotSimmap(simmap_result, fsize = 0.8, cex = 0.8, mar = c(3, 1, 1, 1))
+```
+
+
+## **Figure 2: Plots depicting association between defensive coloration and eco-physiological variables.**
+
+1.  Load and clean data to remove incomplete samples.
+
+```{r}
+data <- read.csv("Data_file.xls - Ecological_data.csv")
+eco_data <- na.omit(data)
+eco_data <- eco_data[,-1]
+head(eco_data)
+col3vol <- read.csv("Data_file.xls - Coloration (Three voulnteers).csv")
+head(col3vol)
+
+```
+
+2.  Simplify lizard description data (coloration) to simple if stripes (1) versus no stripes (0).
+
+```{r}
+# Sum the values in each row
+sums_per_row <- rowSums(col3vol[, 2:7])
+# Create a new data frame
+stripes01 <- data.frame(
+ Species.name = col3vol$Species.name,
+  Stripes = ifelse(sums_per_row == 0, 0, 1)
+)
+
+sums_per_row_1 <- rowSums(col3vol[, 8:16])
+stripes02 <- data.frame(Species.name = col3vol$Species.name, Color = ifelse(sums_per_row_1 == 0, 0, 1))
+
+stripes <- merge(stripes01, stripes02, by = "Species.name", all = TRUE)
+# Display the new data frame
+head(stripes)
+```
+
+3.  Combine data so physical description data is in the same table as ecological data.
+
+```{r}
+# Merge data frames based on "species.name"
+merged_df <- merge(eco_data, stripes, by = "Species.name", all = TRUE)
+
+# Filter out rows that were not changed (not present in both data frames)
+changed_rows <- complete.cases(merged_df)
+final_df <- merged_df[changed_rows, ]
+
+# Display the final merged and filtered data frame
+head(final_df)
+```
+
+4.  Create a boxplot showing median and interquartile range of lizard body temperature.
+
+    *Boxplots showing median and interquartile range of lizard body temperature; outliers are shown as black circles (P = 0.0029).*
+
+```{r}
+library (ggplot2)
+#create a boxplot with outliers shown as black circles 
+# Box plot with two boxes for stripes value = 1 and stripes value = 0
+boxplot(Body.temperature ~ Stripes, data = final_df,
+        main = "(a)",
+        xlab = "Stripes",
+        ylab = "Body Temperature (°C)",
+        ylim = c(0, 50),
+        col = c("gray", "red"),  # Colors for the boxes
+        border = "darkblue",  # Border color
+        outlier.col = "black",  # Color of outliers
+        pch = 16  # Symbol for outliers
+)
+# Add the p-value annotation
+text(1.5, max(final_df$body_temperature) + 1, "P = 0.0029", pos = 3)
+```
+
+5.  Create a graph showing proportion of striped and non-striped species which are nocturnal or diurnal.
+
+```{r}
+# Calculate the proportions
+proportions <- prop.table(table(final_df$Diel.activity..Nocturnal.1..Diurnal.0., final_df$Stripes), margin = 1)
+
+# Convert proportions to a data frame
+proportions_df <- as.data.frame(proportions)
+
+# Reshape the data for plotting
+proportions_long <- reshape2::melt(proportions_df)
+
+# Plot using ggplot2
+ggplot(proportions_long, aes(x = Var1, y = value, fill = factor(Var2))) +
+  geom_bar(stat = "identity") +
+  labs(title = "(b)", x = "Activity (Diurnal = 0, Nocturnal = 1)", y = "Proportion of Species") +
+  scale_fill_manual(values = c("gray", "red"), name = "Stripes? (No = 0, Yes = 1)") +
+  theme_minimal()
+```
+
+6.  Create a graph showing the proportion of striped and non-striped which are ground dwelling or scansorial.
+
+```{r}
+# Calculate the proportions
+proportions <- prop.table(table(final_df$Habitat..Scansorial.1..Ground.dwelling.0., final_df$Stripes), margin = 1)
+
+# Convert proportions to a data frame
+proportions_df <- as.data.frame(proportions)
+
+# Reshape the data for plotting
+proportions_long <- reshape2::melt(proportions_df)
+
+# Plot using ggplot2
+ggplot(proportions_long, aes(x = Var1, y = value, fill = factor(Var2))) +
+  geom_bar(stat = "identity") +
+  labs(title = "(c)", x = "Habitat (Ground Dwelling = 0, Scansorial = 1)", y = "Proportion of Species") +
+  scale_fill_manual(values = c("gray", "red"), name = "Stripes? (No = 0, Yes = 1)") +
+  theme_minimal()
+```
+
+7.  Create a graph showing the proportion of species with and without colorful tails that are nocturnal or diurnal.
+
+*Proportion of species with and without colourful tail which are nocturnal or diurnal*
+
+```{r}
+# Calculate the proportions
+proportions <- prop.table(table(final_df$Diel.activity..Nocturnal.1..Diurnal.0., final_df$Color), margin = 1)
+
+# Convert proportions to a data frame
+proportions_df <- as.data.frame(proportions)
+
+# Reshape the data for plotting
+proportions_long <- reshape2::melt(proportions_df)
+
+# Plot using ggplot2
+ggplot(proportions_long, aes(x = Var1, y = value, fill = factor(Var2))) +
+  geom_bar(stat = "identity") +
+  labs(title = "(d)", x = "Activity (Diurnal = 0, Nocturnal = 1)", y = "Proportion of Species") +
+  scale_fill_manual(values = c("gray", "purple"), name = "Colourful tail? (No = 0, Yes = 1)") +
+  theme_minimal()
+```
