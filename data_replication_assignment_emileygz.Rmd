@@ -33,9 +33,9 @@ Their data set (ecological_data.csv) has data related to caudal autotomy, diel a
 
 In their analysis, they perform a series of descriptive and interpretive analyses. These are visualized in a series of graphics. I plan to replicate
 
-1.  figure 1. Ancestral states of protective colorations. (*interpretive analyses)*
+1.  figure 2. Correlation between discrete traits (caudal autotomy, stripes, colourful tail, diel activity and habitat).
 
-2.  figure 2. Correlation between discrete traits (caudal autotomy, stripes, colourful tail, diel activity and habitat). (*descriptive analyses)*
+2.  table S5. Two-pair method: Results of the pairwise correlation analyses between discrete eco-physiological variables and (a) striped body and (b) colourful tail.
 
 ### Research Methods
 
@@ -109,24 +109,6 @@ To test the association between caudal autotomy and protective coloration, data 
 
 ### My Replication
 
-#### *Figure 1: Ancestral States of Protective Colorations (Interpretive Statistics)*
-
-1.  **Install** and **Load** the correct packages
-
-2.  Create or Import a phylogenetic tree
-
-3.  **Prepare** the data matrix with the character states for each tip of the tree. This matrix should have rows corresponding to species or taxa and columns representing character states.
-
-4.  Perform **Bayesian Stochastic Character Mapping**
-
-    1.  Convert data frame to a data matrix.
-
-    2.  Perform **Bayesian stochastic character mapping** with simmap function
-
-        1.  "make.simmap" takes the phylogenetic tree and the the trait matrix as input. The nsim parameter will be 5000 in accordance with the figure in the study.
-
-    3.  Visualize the results.
-
 #### *Figure 2: Correlation between discrete traits (caudal autotomy, stripes, colourful tail, diel activity and habitat) (Descriptive Statistics)*
 
 1.  Load and clean data to remove incomplete samples.
@@ -141,43 +123,34 @@ To test the association between caudal autotomy and protective coloration, data 
 
 6.  Create a graph showing the proportion of species with and without colorful tails that are nocturnal or diurnal.
 
-## Figure 1: Ancestral States of Protective Colorations
+#### *Table S5: Results of the pairwise correlation analyses between discrete eco-physiological variables and (a) striped body and (b) colourful tail.*
 
-"Ancestral state reconstruction using Bayesian stochastic character mapping of stripes and colourful tail. The colour bar represents the posterior probability of the tip states from 5000 simulations."
+1.  Create data frame with columns for the eco-physiological variables, 'stripes', and 'colorful tail'
+2.  Run pairwise correlation analyses variable combinations. Use pearson analysis.
+3.  Print results.
+4.  Analyze results. (Values closer to +/- 1 indicate positive or negative association between the two factors. As the correlation coefficient value goes towards 0, the relationship gets weaker.)
+
+## **Figure 2: Plots depicting association between defensive coloration and Eco-physiological variables.**
 
 1.  Download necessary packages.
 
 ```{r}
-install.packages("phytools")
-install.packages("ape")
-install.packages("diversitree")
-install.packages("phylobase")
-install.packages("dplyr")
-```
-
-```{r}
 library(phytools)
-library(ape)
 library(dplyr)
-library(diversitree)
-library(phylobase)
 ```
 
-2.  Create tree.
+2.  Combine data so physical description data is in the same table as ecological data.
 
 ```{r}
-# Generate a random tree with 1622 branches
-set.seed(42)  # For reproducibility
-random_tree <- rtree(1622)
-plot(random_tree, cex = 0.01)  # Adjust cex for label size
-```
+#Load eco_data
+data <- read.csv("Data_file.xls - Ecological_data.csv")
+eco_data <- na.omit(data)
+eco_data <- eco_data[,-1]
 
-2.  **Prepare** the data matrix with the character states for each tip of the tree. This matrix should have rows corresponding to species or taxa and columns representing character states.
-
-```{r}
-# Load data from CSV file
+# Load physical description data
 col3vol <- read.csv("Data_file.xls - Coloration (Three voulnteers).csv")
-eco_data <- na.omit(col3vol)
+col3vol <- na.omit(col3vol)
+
 # Sum the values in each row
 stripes_sum <- rowSums(col3vol[, 2:7])
 # Create a new data frame
@@ -188,49 +161,9 @@ stripes <- data.frame(
 color_sum <- rowSums(col3vol[, 8:16])
 colorful <- data.frame(Species.name = col3vol$Species.name, Color = ifelse(color_sum == 0, 0, 1))
 phys_char_df <- merge(stripes, colorful, by = "Species.name", all = TRUE)
-# Display the new data frame
-phys_char_df
-```
 
-4.  Perform **Bayesian Stochastic Character Mapping**
-
-    4a) Convert data frame to a data matrix.
-
-```{r}
-# Convert data frame to a data matrix
-trait_matrix <- data.matrix(phys_char_df)
-head(trait_matrix)
-```
-
-4b) Perform \*\*Bayesian stochastic character mapping\*\* with simmap function. To visualize how traits have evolved over time, the researchers performed ancestral state reconstruction for binary coloration traits using two approaches: (i) Bayesian stochastic character mapping and (ii) corHMM-based maximum likelihood method, which takes into account heterogeneity in trait evolution.
-
-For Bayesian stochastic character mapping the function used was \*make.simmap\* from the \*phytools\* package.
-
-```{r}
-#make.simmap fits a continuous-time reversible Markov model for the evolution of 'x' and then simulates stochastic character histories using that model and the tip states on the tree. 
-#Arguments: tree = a phylogenetic tree as an object of class "phylo," x = a vector containing the tip states for a discretely valued character. model = a character string containing the model options as in 'ace' nsim = number of simulations. 
-##make.simmap(tree, x, model = "SYM", nsim = 1)
-make.simmap (tree, x, model = "ACE", nsim = 5000)
-```
-
-5.  Visualize the results:
-
-## **Figure 2: Plots depicting association between defensive coloration and Eco-physiological variables.**
-
-1.  Load and clean data to remove incomplete samples.
-
-```{r}
-data <- read.csv("Data_file.xls - Ecological_data.csv")
-eco_data <- na.omit(data)
-eco_data <- eco_data[,-1]
-```
-
-2.  Combine data so physical description data is in the same table as ecological data (use lizard description data of color and stripe presence created earlier in project)
-
-```{r}
 # Merge data frames based on "species.name"
 merged_df <- merge(eco_data, phys_char_df, by = "Species.name", all = TRUE)
-
 # Filter out rows that were not changed (not present in both data frames)
 changed_rows <- complete.cases(merged_df)
 final_df <- merged_df[changed_rows, ]
@@ -320,3 +253,69 @@ ggplot(proportions_long, aes(x = Var1, y = value, fill = factor(Var2))) +
   scale_fill_manual(values = c("gray", "purple"), name = "Colourful tail? (No = 0, Yes = 1)") +
   theme_minimal()
 ```
+
+Figure 2 from the article:
+
+![Figure 2](img/Figure2.png)
+
+## Table S5. Results of the pairwise correlation analyses between discrete eco-physiological variables and (a) striped body and (b) colourful tail.
+
+1.  Create data frame with columns for the eco-physiological variables, 'stripes', and 'colorful tail'
+
+    ```{r}
+    head(final_df)
+    ```
+
+2.  Run pairwise correlation analyses variable combinations. Use pearson analysis.
+
+    ```{r}
+    #stripes versus habitat/cautal/color
+    cor_stripes_habitat <- cor.test(final_df$Stripes, final_df$Habitat..Scansorial.1..Ground.dwelling.0., method = "pearson")
+    cor_stripes_cautal <- cor.test(final_df$Stripes, final_df$Cautal.autotomy..Yes.1.No.0., method = "pearson")
+    cor_stripes_color <- cor.test(final_df$Stripes, final_df$Color, method = "pearson")
+
+    #color versus habitat/cautal
+    cor_color_habitat <- cor.test(final_df$Color, final_df$Habitat..Scansorial.1..Ground.dwelling.0., method = "pearson")
+    cor_color_cautal <- cor.test(final_df$Color, final_df$Cautal.autotomy..Yes.1.No.0., method = "pearson")
+
+    ```
+
+3.  Print results.
+
+```{r}
+cor_stripes_habitat
+cor_stripes_cautal
+cor_stripes_color
+cor_color_habitat
+cor_color_cautal
+```
+
+4.  Analyze results. (Values closer to +/- 1 indicate positive or negative association between the two factors. As the correlation coefficient value goes towards 0, the relationship gets weaker.)
+
+-   Stripes \~ Habitat Usage (Scansorial = 1, Ground-Dwelling = 0)
+
+    > -0.1163657
+
+-   Stripes \~ Caudal Anatomy (Yes = 1, No= 0)
+
+    > 0.4179749
+
+<!-- -->
+
+-   Stripes \~ Color (Colorful Tail = 1, No Colorful Tail = 0)
+
+    > 0.3524086
+
+-   Color \~ Habitat Usage (Scansorial = 1, Ground-Dwelling = 0)
+
+    > -0.1045659
+
+<!-- -->
+
+-   Color \~ Caudal Anatomy (Yes = 1, No= 0)
+
+    > 0.2492356
+
+From these results, there is a week association between stripes & habitat usage, colorful tail and habitat usage, and color and caudal anatomy. There is a stronger association between stripes and caudal anatomy and stripes and having a colorful tail. This is in line with the researcher's hypothesis that stripes and colorful tails have to do with avoiding attacks from prey and are in line with deflecting attacks to parts of the body that can be regenerated. The researchers used the p-values as comparative measures and came to the same conclusions.
+
+![Table S5 from article](img/Table%20S5.png)
