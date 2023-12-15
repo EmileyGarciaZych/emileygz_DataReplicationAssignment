@@ -75,10 +75,7 @@ To test the association between caudal autotomy and protective coloration, data 
 
 (ii) corHMM-based maximum-likelihood method
 
-```{=html}
-<!-- -->
-```
-2)  Identifying correlation between discrete traits
+#### 2) Identifying correlation between discrete traits
 
 -   using the software Bayestraits, implemented a reversible jump Markov chain method to obtain parameter estimates from different evolutionary models
 
@@ -134,17 +131,15 @@ To test the association between caudal autotomy and protective coloration, data 
 
 1.  Load and clean data to remove incomplete samples.
 
-2.  Simplify lizard description data (coloration) to simple if tail (1) versus no tail (0).
+2.  Combine data so physical description data is in the same table as ecological data.
 
-3.  Combine data so physical description data is in the same table as ecological data.
+3.  Create a boxplot showing median and interquartile range of lizard body temperature.
 
-4.  Create a boxplot showing median and interquartile range of lizard body temperature.
+4.  Create a graph showing proportion of striped and non-striped species which are nocturnal or diurnal.
 
-5.  Create a graph showing proportion of striped and non-striped species which are nocturnal or diurnal.
+5.  Create a graph showing the proportion of striped and non-striped which are ground dwelling or scansorial.
 
-6.  Create a graph showing the proportion of striped and non-striped which are ground dwelling or scansorial.
-
-7.  Create a graph showing the proportion of species with and without colorful tails that are nocturnal or diurnal.
+6.  Create a graph showing the proportion of species with and without colorful tails that are nocturnal or diurnal.
 
 ## Figure 1: Ancestral States of Protective Colorations
 
@@ -155,70 +150,72 @@ To test the association between caudal autotomy and protective coloration, data 
 ```{r}
 install.packages("phytools")
 install.packages("ape")
+install.packages("diversitree")
+install.packages("phylobase")
+install.packages("dplyr")
 ```
 
 ```{r}
 library(phytools)
 library(ape)
 library(dplyr)
+library(diversitree)
+library(phylobase)
 ```
 
 2.  Create tree.
 
 ```{r}
-# Set the number of tips (samples) in the tree
-num_tips <- 1622
-# Create a random ultrametric tree with num_tips tips
-tree <- rtree(num_tips)
-# Plot the tree
-plot(tree, cex = 0.8)
+# Generate a random tree with 1622 branches
+set.seed(42)  # For reproducibility
+random_tree <- rtree(1622)
+plot(random_tree, cex = 0.01)  # Adjust cex for label size
 ```
-3.  **Prepare** the data matrix with the character states for each tip of the tree. This matrix should have rows corresponding to species or taxa and columns representing character states.
+
+2.  **Prepare** the data matrix with the character states for each tip of the tree. This matrix should have rows corresponding to species or taxa and columns representing character states.
 
 ```{r}
 # Load data from CSV file
 col3vol <- read.csv("Data_file.xls - Coloration (Three voulnteers).csv")
 eco_data <- na.omit(col3vol)
-
 # Sum the values in each row
-sums_per_row <- rowSums(col3vol[, 2:7])
+stripes_sum <- rowSums(col3vol[, 2:7])
 # Create a new data frame
-stripes01 <- data.frame(
+stripes <- data.frame(
  Species.name = col3vol$Species.name,
-  Stripes = ifelse(sums_per_row == 0, 0, 1)
+  Stripes = ifelse(stripes_sum == 0, 0, 1)
 )
-
-sums_per_row_1 <- rowSums(col3vol[, 8:16])
-stripes02 <- data.frame(Species.name = col3vol$Species.name, Color = ifelse(sums_per_row_1 == 0, 0, 1))
-
-stripes <- merge(stripes01, stripes02, by = "Species.name", all = TRUE)
+color_sum <- rowSums(col3vol[, 8:16])
+colorful <- data.frame(Species.name = col3vol$Species.name, Color = ifelse(color_sum == 0, 0, 1))
+phys_char_df <- merge(stripes, colorful, by = "Species.name", all = TRUE)
 # Display the new data frame
-stripes
+phys_char_df
 ```
 
 4.  Perform **Bayesian Stochastic Character Mapping**
 
-    4.  
-
-        a)  Convert data frame to a data matrix.
+    4a) Convert data frame to a data matrix.
 
 ```{r}
 # Convert data frame to a data matrix
-trait_matrix <- data.matrix(stripes)
+trait_matrix <- data.matrix(phys_char_df)
 head(trait_matrix)
 ```
 
-    4.  
+4b) Perform \*\*Bayesian stochastic character mapping\*\* with simmap function. To visualize how traits have evolved over time, the researchers performed ancestral state reconstruction for binary coloration traits using two approaches: (i) Bayesian stochastic character mapping and (ii) corHMM-based maximum likelihood method, which takes into account heterogeneity in trait evolution.
 
-        b)  Perform **Bayesian stochastic character mapping** with simmap function. To visualize how traits have evolved over time, the researchers performed ancestral state reconstruction for binary coloration traits using two approaches: (i) Bayesian stochastic character mapping and (ii) corHMM-based maximum likelihood method, which takes into account heterogeneity in trait evolution.
+For Bayesian stochastic character mapping the function used was \*make.simmap\* from the \*phytools\* package.
 
-        For Bayesian stochastic character mapping the function used was *make.simmap* from the *phytools* package.
+```{r}
+#make.simmap fits a continuous-time reversible Markov model for the evolution of 'x' and then simulates stochastic character histories using that model and the tip states on the tree. 
+#Arguments: tree = a phylogenetic tree as an object of class "phylo," x = a vector containing the tip states for a discretely valued character. model = a character string containing the model options as in 'ace' nsim = number of simulations. 
+##make.simmap(tree, x, model = "SYM", nsim = 1)
+make.simmap (tree, x, model = "ACE", nsim = 5000)
+```
 
 5.  Visualize the results:
 
-
-
-## **Figure 2: Plots depicting association between defensive coloration and eco-physiological variables.**
+## **Figure 2: Plots depicting association between defensive coloration and Eco-physiological variables.**
 
 1.  Load and clean data to remove incomplete samples.
 
@@ -226,36 +223,13 @@ head(trait_matrix)
 data <- read.csv("Data_file.xls - Ecological_data.csv")
 eco_data <- na.omit(data)
 eco_data <- eco_data[,-1]
-head(eco_data)
-col3vol <- read.csv("Data_file.xls - Coloration (Three voulnteers).csv")
-head(col3vol)
-
 ```
 
-2.  Simplify lizard description data (coloration) to simple if stripes (1) versus no stripes (0).
-
-```{r}
-# Sum the values in each row
-sums_per_row <- rowSums(col3vol[, 2:7])
-# Create a new data frame
-stripes01 <- data.frame(
- Species.name = col3vol$Species.name,
-  Stripes = ifelse(sums_per_row == 0, 0, 1)
-)
-
-sums_per_row_1 <- rowSums(col3vol[, 8:16])
-stripes02 <- data.frame(Species.name = col3vol$Species.name, Color = ifelse(sums_per_row_1 == 0, 0, 1))
-
-stripes <- merge(stripes01, stripes02, by = "Species.name", all = TRUE)
-# Display the new data frame
-head(stripes)
-```
-
-3.  Combine data so physical description data is in the same table as ecological data.
+2.  Combine data so physical description data is in the same table as ecological data (use lizard description data of color and stripe presence created earlier in project)
 
 ```{r}
 # Merge data frames based on "species.name"
-merged_df <- merge(eco_data, stripes, by = "Species.name", all = TRUE)
+merged_df <- merge(eco_data, phys_char_df, by = "Species.name", all = TRUE)
 
 # Filter out rows that were not changed (not present in both data frames)
 changed_rows <- complete.cases(merged_df)
@@ -265,9 +239,9 @@ final_df <- merged_df[changed_rows, ]
 head(final_df)
 ```
 
-4.  Create a boxplot showing median and interquartile range of lizard body temperature.
+3.  Create a boxplot showing median and interquartile range of lizard body temperature.
 
-    *Boxplots showing median and interquartile range of lizard body temperature; outliers are shown as black circles (P = 0.0029).*
+*Boxplots showing median and interquartile range of lizard body temperature; outliers are shown as black circles (P = 0.0029).*
 
 ```{r}
 library (ggplot2)
@@ -283,11 +257,9 @@ boxplot(Body.temperature ~ Stripes, data = final_df,
         outlier.col = "black",  # Color of outliers
         pch = 16  # Symbol for outliers
 )
-# Add the p-value annotation
-text(1.5, max(final_df$body_temperature) + 1, "P = 0.0029", pos = 3)
 ```
 
-5.  Create a graph showing proportion of striped and non-striped species which are nocturnal or diurnal.
+4.  Create a graph showing proportion of striped and non-striped species which are nocturnal or diurnal.
 
 ```{r}
 # Calculate the proportions
@@ -307,7 +279,7 @@ ggplot(proportions_long, aes(x = Var1, y = value, fill = factor(Var2))) +
   theme_minimal()
 ```
 
-6.  Create a graph showing the proportion of striped and non-striped which are ground dwelling or scansorial.
+5.  Create a graph showing the proportion of striped and non-striped which are ground dwelling or scansorial.
 
 ```{r}
 # Calculate the proportions
@@ -327,7 +299,7 @@ ggplot(proportions_long, aes(x = Var1, y = value, fill = factor(Var2))) +
   theme_minimal()
 ```
 
-7.  Create a graph showing the proportion of species with and without colorful tails that are nocturnal or diurnal.
+6.  Create a graph showing the proportion of species with and without colorful tails that are nocturnal or diurnal.
 
 *Proportion of species with and without colourful tail which are nocturnal or diurnal*
 
