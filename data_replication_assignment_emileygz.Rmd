@@ -153,6 +153,11 @@ To test the association between caudal autotomy and protective coloration, data 
 1.  Download necessary packages.
 
 ```{r}
+install.packages("phytools")
+install.packages("ape")
+```
+
+```{r}
 library(phytools)
 library(ape)
 library(dplyr)
@@ -201,7 +206,6 @@ stripes
 # Convert data frame to a data matrix
 trait_matrix <- data.matrix(stripes)
 head(trait_matrix)
-
 ```
 
     4.  
@@ -210,37 +214,8 @@ head(trait_matrix)
 
         For Bayesian stochastic character mapping the function used was *make.simmap* from the *phytools* package.
 
-```{r}
-num_simulations <- 5000
-# Create a data matrix for the traits (example with two binary traits)
-trait_matrix <- matrix(sample(0:1, num_tips * 2, replace = TRUE), ncol = 2)
-
-# Perform Bayesian stochastic character mapping
-simmap_result <- make.simmap(tree, trait_matrix, nsim = num_simulations)
-```
-
 5.  Visualize the results:
-```{r}
-plotSimmap(simmap_result, fsize = 0.8, cex = 0.8, mar = c(3, 1, 1, 1))
-```
 
-```{r}
-
-# Set the number of tips (samples) in the tree
-num_tips <- 1000
-# Create a random ultrametric tree with num_tips tips
-tree <- rtree(num_tips)
-# Plot the tree (optional)
-plot(tree, cex = 0.6)
-# Set the number of simulations
-num_simulations <- 5000
-# Create a data matrix for a binary trait (example)
-trait_matrix <- matrix(sample(0:1, num_tips, replace = TRUE), ncol = 1)
-# Perform Bayesian stochastic character mapping
-simmap_result <- make.simmap(tree, trait_matrix, nsim = num_simulations)
-# Visualize the results with a color bar representing posterior probabilities
-plotSimmap(simmap_result, fsize = 0.8, cex = 0.8, mar = c(3, 1, 1, 1))
-```
 
 
 ## **Figure 2: Plots depicting association between defensive coloration and eco-physiological variables.**
